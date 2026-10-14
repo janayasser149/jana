@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cinema Booking System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .screen {
+            background-color: #444;
+            height: 50px;
+            margin: 20px auto;
+            width: 300px;
+            color: white;
+            line-height: 50px;
+        }
+        .row {
+            display: flex;
+            justify-content: center;
+        }
+        .seat {
+            background-color: green;
+            height: 30px;
+            width: 30px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .seat.selected {
+            background-color: yellow;
+        }
+        .seat.booked {
+            background-color: red;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cinema Booking System</h1>
+    <label for="movie">Choose a movie:</label>
+    <select id="movie">
+        <option value="0">Avengers (EGP 100)</option>
+        <option value="1">Inception (EGP 90)</option>
+        <option value="2">Joker (EGP 80)</option>
+    </select>
+    <button onclick="viewSeats()">View Seats</button>
+
+    <div class="screen">Screen</div>
+    <div id="seatsContainer"></div>
+    <p id="totalCost"></p>
+    <button onclick="bookSeats()">Book Selected Seats</button>
+    <h3>Total Revenue per Movie:</h3>
+    <ul>
+        <li>Avengers: <span id="revenue0">0</span> EGP</li>
+        <li>Inception: <span id="revenue1">0</span> EGP</li>
+        <li>Joker: <span id="revenue2">0</span> EGP</li>
+    </ul>
+    <script>
+    const rows = 5;
+    const cols = 6;
+    const seats = Array(3).fill().map(() =>
+        Array(rows).fill().map(() => Array(cols).fill('A'))
+    );
+    const ticketPrices = [100, 90, 80];
+    const revenue = [0, 0, 0];
+
+    function viewSeats() {
+        const movieIndex = document.getElementById("movie").value;
+        const container = document.getElementById("seatsContainer");
+        container.innerHTML = "";
+
+        for (let i = 0; i < rows; i++) {
+            const row = document.createElement("div");
+            row.className = "row";
+
+            for (let j = 0; j < cols; j++) {
+                const seat = document.createElement("div");
+                seat.className = "seat";
+                seat.id = `seat-${i}-${j}`;
+
+                if (seats[movieIndex][i][j] === 'B') {
+                    seat.classList.add("booked");
+                } else {
+                    seat.addEventListener("click", () => toggleSeat(i, j, movieIndex));
+                }
+
+                if (seats[movieIndex][i][j] === 'S') {
+                    seat.classList.add("selected");
+                }
+
+                row.appendChild(seat);
+            }
+            container.appendChild(row);
+        }
+
+        // Update total cost display for currently selected seats
+        updateTotalCost();
+    }
+
+    function toggleSeat(row, col, movieIndex) {
+        if (seats[movieIndex][row][col] === 'A') {
+            seats[movieIndex][row][col] = 'S';
+        } else if (seats[movieIndex][row][col] === 'S') {
+            seats[movieIndex][row][col] = 'A';
+        }
+        viewSeats(); // Refresh the view
+    }
+
+    function updateTotalCost() {
+        const movieIndex = document.getElementById("movie").value;
+        let count = 0;
+        for (let i = 0; i < rows; i++) {
+            for (let j = 0; j < cols; j++) {
+                if (seats[movieIndex][i][j] === 'S') {
+                    count++;
+                }
+            }
+        }
+        const cost = count * ticketPrices[movieIndex];
+        document.getElementById("totalCost").textContent = 
+            count > 0 ? `Total cost: ${cost} EGP` : '';
+    }
+
+    function bookSeats() {
+        const movieIndex = document.getElementById("movie").value;
+        let count = 0;
+
+        for (let i = 0; i < rows; i++) {
+            for (let j = 0; j < cols; j++) {
+                if (seats[movieIndex][i][j] === 'S') {
+                    seats[movieIndex][i][j] = 'B';
+                    count++;
+                }
+            }
+        }
+
+        const cost = count * ticketPrices[movieIndex];
+        revenue[movieIndex] += cost;
+
+        document.getElementById(`revenue${movieIndex}`).textContent = revenue[movieIndex];
+        document.getElementById("totalCost").textContent = 
+            count > 0 ? `Booking successful! Total cost: ${cost} EGP` : 'No seats selected.';
+
+        viewSeats(); // Refresh seats after booking
+    }
+</script>
+</body>
+</html>
